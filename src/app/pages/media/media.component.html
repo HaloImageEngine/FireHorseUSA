@@ -1,0 +1,30 @@
+<section class="media">
+	<h2>Upload an Image</h2>
+	<p class="hint">Use your phone camera or gallery to select a photo and send it to the server.</p>
+
+	<div class="media__picker">
+		<label class="media__file-label" for="imageInput">
+			Choose or take a picture
+		</label>
+		<input
+			id="imageInput"
+			type="file"
+			accept="image/*"
+			capture="environment"
+			(change)="onFileSelected($event)"
+		/>
+	</div>
+
+	<div class="media__preview" *ngIf="previewUrl as url">
+		<h3>Preview</h3>
+		<img [src]="url" alt="Selected image preview" />
+	</div>
+
+	<div class="media__actions">
+		<button type="button" (click)="uploadImage()" [disabled]="!selectedFile || isUploading">
+			{{ isUploading ? 'Uploading…' : 'Upload Image' }}
+		</button>
+	</div>
+
+	<p class="status" *ngIf="statusMessage">{{ statusMessage }}</p>
+</section>

@@ -1,0 +1,71 @@
+<header class="header">
+  <div class="header-inner">
+    <!-- Brand / Logo -->
+    <a class="brand" routerLink="/">
+      <div class="logo-container">
+        <img src="images/Firehorse-Logo-Solo.png" alt="FireHorse Logo" class="logo-img animated-logo">
+      </div>
+
+      <span class="brand-text">
+        <!-- animated title -->
+        <span class="title firehorse-title">
+          <span class="fire">Fire</span>
+          <span class="horse-h">H</span>
+          <span class="orse">orse Saloon</span>
+        </span>
+
+        <span class="subtitle">
+          Dance + Spirits + Nightlife
+          <!-- <span class="user-id" *ngIf="userId && isLoggedIn">#{{ userId }}</span> -->
+        </span>
+      </span>
+    </a>
+
+    <!-- Nav + user alias on the right -->
+    <div class="header-right">
+      <!-- Existing nav -->
+      <app-nav></app-nav>
+
+      <!-- Auth section -->
+      <div class="auth-section">
+        <!-- Show alias if we have one - bright acid green - hides on logoff -->
+        <span
+          class="user-alias"
+          *ngIf="userAlias && isLoggedIn"
+        >
+          {{ userAlias }}
+        </span>
+
+        <!-- Single auth button; label & behavior come from TS -->
+        <button
+          type="button"
+          class="auth-btn"
+          (click)="onAuthClick()"
+        >
+          {{ authLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Version popup -->
+<div
+  class="version-backdrop"
+  *ngIf="showVersion()"
+  (click)="closeVersion()"
+>
+  <div class="version-modal" (click)="$event.stopPropagation()">
+    <div class="version-body">
+      <p class="version-line">Version {{ version }}</p>
+      <p class="version-line">Written by : WDBeaty</p>
+    </div>
+    <button
+      type="button"
+      class="version-close"
+      (click)="closeVersion()"
+    >
+      Close
+    </button>
+  </div>
+</div>
