@@ -6,6 +6,8 @@ import { Injectable, signal } from '@angular/core';
 export class AuthService {
   // User ID signal
   private userIdSignal = signal<string | null>(null);
+  // User Alias signal
+  private userAliasSignal = signal<string | null>(null);
 
   /**
    * Get the current userId value
@@ -22,6 +24,29 @@ export class AuthService {
   }
 
   /**
+   * Get the current userAlias value
+   */
+  getUserAlias(): string | null {
+    return this.userAliasSignal();
+  }
+
+  /**
+   * Set the userAlias (called from header or login components)
+   */
+  setUserAlias(userAlias: string | null): void {
+    this.userAliasSignal.set(userAlias);
+  }
+
+  /**
+   * Check if user is logged in
+   */
+  isLoggedIn(): boolean {
+    const userId = this.getUserId() || this.getUserIdFromCookie();
+    const userAlias = this.getUserAlias() || this.getUserAliasFromCookie();
+    return !!(userId && userAlias);
+  }
+
+  /**
    * Get userId from cookies (fallback method)
    */
   getUserIdFromCookie(): string | null {
@@ -34,6 +59,19 @@ export class AuthService {
       }
     } catch (err) {
       console.error('Error reading userId from cookie', err);
+    }
+    return null;
+  }
+
+  /**
+   * Get userAlias from cookies (fallback method)
+   */
+  getUserAliasFromCookie(): string | null {
+    try {
+      if (typeof document === 'undefined') return null;
+      return this.getCookie('useralias');
+    } catch (err) {
+      console.error('Error reading userAlias from cookie', err);
     }
     return null;
   }
