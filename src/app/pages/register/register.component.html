@@ -31,17 +31,33 @@
         <mat-form-field appearance="outline" class="field full-width">
           <mat-label>User Alias *</mat-label>
           <input
+            #userAliasInput
             matInput
             formControlName="userAlias"
             maxlength="20"
             autocomplete="username"
             (input)="onAliasInput($event)"
+            (blur)="onAliasBlur()"
           />
           <mat-hint>6-20 characters, no spaces (auto-uppercase)</mat-hint>
           <mat-error *ngIf="f['userAlias'].touched && f['userAlias'].invalid">
             {{ f['userAlias'].getError('alias') || 'User alias is required.' }}
           </mat-error>
         </mat-form-field>
+
+        <!-- Alias availability message -->
+        <div
+          *ngIf="checkingAlias() || aliasMessage().text"
+          class="alias-check-message"
+          [ngClass]="{
+            'alias-checking': checkingAlias(),
+            'alias-available': aliasMessage().type === 'success',
+            'alias-taken': aliasMessage().type === 'error'
+          }"
+        >
+          <span *ngIf="checkingAlias()">Checking availability...</span>
+          <span *ngIf="!checkingAlias() && aliasMessage().text">{{ aliasMessage().text }}</span>
+        </div>
       </div>
 
       <!-- First Name + M.I. -->

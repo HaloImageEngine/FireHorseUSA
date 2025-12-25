@@ -87,12 +87,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     console.log('localStorage firehorseUserDisplay:', localStorage.getItem('firehorseUserDisplay'));
     console.log('localStorage techjumpUserDisplay:', localStorage.getItem('techjumpUserDisplay'));
     console.log('Cookie useralias:', this.getCookie('useralias'));
-    console.log('Cookie ljUserAuth:', this.getCookie('ljUserAuth'));
-    console.log('Cookie ljUserDisplay:', this.getCookie('ljUserDisplay'));
+    console.log('Cookie fhUserAuth:', this.getCookie('fhUserAuth'));
+    console.log('Cookie fhUserDisplay:', this.getCookie('fhUserDisplay'));
 
-    // Read userId from ljUserAuth cookie
+    // Read userId from fhUserAuth cookie
     try {
-      const authCookie = this.getCookie('ljUserAuth');
+      const authCookie = this.getCookie('fhUserAuth');
       console.log('Raw authCookie string:', authCookie);
       if (authCookie) {
         const authData = JSON.parse(authCookie);
@@ -107,7 +107,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.authService.setUserId(null);
       }
     } catch (err) {
-      console.error('Error parsing ljUserAuth cookie:', err);
+      console.error('Error parsing fhUserAuth cookie:', err);
       this.userId = null;
     }
     console.log('=== END DEBUG ===');
@@ -129,12 +129,30 @@ export class HeaderComponent implements OnInit, OnDestroy {
   onAuthClick(): void {
     // Decide action based on current label
     if (this.authLabel === 'LogOff') {
-      // Mark as logged off and CLEAR the alias to hide it
+      // Mark as logged off and CLEAR everything
       this.isLoggedIn = false;
-      this.userAlias = null; // ✅ Clear alias on logoff
-      // (Optional) you could clear additional auth cookies/token here
-      console.log('LogOff clicked - mark user as logged out, alias cleared');
+      this.userAlias = null;
+      this.userId = null;
+
+      // Clear all cookies
+      this.deleteCookie('useralias');
+      this.deleteCookie('fhUserAuth');
+      this.deleteCookie('fhUserDisplay');
+
+      // Clear localStorage
+      try {
+        localStorage.removeItem('techjumpUserDisplay');
+        localStorage.removeItem('firehorseUserDisplay');
+      } catch {
+        // ignore
+      }
+
+      // Update AuthService
+      this.authService.setUserId(null);
+
+      console.log('LogOff clicked - all auth data cleared');
       this.refreshAuthStateFromCookies();
+
       // Navigate to logoff page
       this.router.navigate(['/logoff']);
     } else if (this.authLabel === 'Login') {
@@ -142,6 +160,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.router.navigate(['/login']);
     } else if (this.authLabel === 'Register') {
       this.router.navigate(['/register']);
+    }
+  }
+
+  private deleteCookie(name: string): void {
+    try {
+      document.cookie = `${name}=; Expires=Thu, 01 Jan 1970 00:00:00 UTC; Path=/; SameSite=Lax`;
+    } catch {
+      // ignore
     }
   }
 

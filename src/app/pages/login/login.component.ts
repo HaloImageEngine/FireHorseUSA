@@ -17,8 +17,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 const DEV_BACKDOOR_PASSWORD = 'halohalo500';
 
 // API
-const API_BASE = 'https://techinterviewjump.com';
-const VERIFY_ALIAS_URL = `${API_BASE}/api/Techjump/login/verify-alias`; // POST JSON: { Alias, Password }
+const API_BASE = 'https://rapidcmsdemo.com';
+const VERIFY_ALIAS_URL = `${API_BASE}/api/RapidCMS/login/verify-alias`; // POST JSON: { Alias, Password }
+const VERIFY_EMAIL_URL = `${API_BASE}/api/RapidCMS/login/verify-email`; // POST JSON: { Email, Password }
 
 // "Non-expiring" persistent cookie (approx. 20 years)
 const PERSISTENT_COOKIE_DAYS = 365 * 20;
@@ -110,7 +111,7 @@ export class LoginComponent {
   private checkLoginCookie(): void {
     try {
       const cookies = document.cookie.split(';');
-      const authCookie = cookies.find(c => c.trim().startsWith('ljUserAuth='));
+      const authCookie = cookies.find(c => c.trim().startsWith('fhUserAuth='));
       this.cookieExists.set(!!authCookie);
     } catch {
       this.cookieExists.set(false);
@@ -213,7 +214,7 @@ export class LoginComponent {
         userId: Number(payload.userId) || 0  // Store as number
       });
       // UI display cookie (1 year is fine)
-      this.setCookie('ljUserDisplay', value, 365);
+      this.setCookie('fhUserDisplay', value, 365);
     } catch {
       // swallow
     }
@@ -230,7 +231,7 @@ export class LoginComponent {
         userId: Number(userId) || 0  // Store as number
       });
       // Approx. "does not expire" by using a 20-year expiry
-      this.setCookie('ljUserAuth', value, PERSISTENT_COOKIE_DAYS);
+      this.setCookie('fhUserAuth', value, PERSISTENT_COOKIE_DAYS);
       // Update CE checkbox after setting cookie
       this.cookieExists.set(true);
     } catch {
@@ -329,6 +330,13 @@ export class LoginComponent {
     });
   }
 
+  private verifyEmailViaApi(email: string, pwd: string) {
+    return this.http.post<VerifyAliasResponse>(VERIFY_EMAIL_URL, {
+      Email: email,
+      Password: pwd
+    });
+  }
+
   // --- UI handlers -----------------------------------------------------------
 
   toggleMode(): void {
@@ -412,10 +420,23 @@ export class LoginComponent {
           return;
         }
         emailCookie = email;
-        aliasToVerify = this.deriveAliasFromEmail(emailCookie);
+        // Use email directly for email mode
+        aliasToVerify = email;
       }
 
-      const data = await this.verifyAliasViaApi(aliasToVerify, password).toPromise();
+      console.log('=== LOGIN API REQUEST ===');
+      console.log('Mode:', this.mode());
+      console.log('Sending to:', this.mode() === 'alias' ? VERIFY_ALIAS_URL : VERIFY_EMAIL_URL);
+      console.log('Payload:', this.mode() === 'alias'
+        ? { Alias: aliasToVerify, Password: '***' }
+        : { Email: aliasToVerify, Password: '***' });
+      console.log('Raw input:', aliasOrEmailRaw);
+      console.log('=== END REQUEST ===');
+
+      // Call the appropriate API based on mode
+      const data = this.mode() === 'alias'
+        ? await this.verifyAliasViaApi(aliasToVerify, password).toPromise()
+        : await this.verifyEmailViaApi(aliasToVerify, password).toPromise();
 
       console.log('=== LOGIN API RESPONSE ===');
       console.log('Full response:', data);

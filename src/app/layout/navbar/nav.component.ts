@@ -59,7 +59,7 @@ export class NavComponent {
     {
       label: 'About',
       children: [
-        { label: 'Info', route: '/about', title: 'Learn more about ITechJump' },
+        { label: 'Info', route: '/about', title: 'Learn more about FireHorse' },
         { label: 'Contact', route: '/contact', title: 'Get in touch with us' },
         { label: `Version ${this.version}`, title: 'View application version information' } // handled as popup
       ]

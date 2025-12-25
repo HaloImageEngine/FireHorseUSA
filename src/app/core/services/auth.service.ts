@@ -27,7 +27,7 @@ export class AuthService {
   getUserIdFromCookie(): string | null {
     try {
       if (typeof document === 'undefined') return null;
-      const authCookie = this.getCookie('ljUserAuth');
+      const authCookie = this.getCookie('fhUserAuth');
       if (authCookie) {
         const authData = JSON.parse(authCookie);
         return authData?.userId || authData?.UserId || null;

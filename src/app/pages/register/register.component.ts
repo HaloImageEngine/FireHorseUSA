@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -31,6 +31,10 @@ export class RegisterComponent {
   showPassword = signal(false);
   submitting = signal(false);
   serverMsg = { text: '', type: '' };
+  checkingAlias = signal(false);
+  aliasMessage = signal<{ text: string; type: 'success' | 'error' | '' }>({ text: '', type: '' });
+
+  @ViewChild('userAliasInput') userAliasInput!: ElementRef<HTMLInputElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -109,6 +113,48 @@ export class RegisterComponent {
     const input = event.target as HTMLInputElement;
     input.value = input.value.replace(/\s/g, '').toUpperCase().slice(0, 20);
     this.form.patchValue({ userAlias: input.value });
+    // Clear alias message when user types
+    this.aliasMessage.set({ text: '', type: '' });
+  }
+
+  onAliasBlur(): void {
+    const alias = this.form.value.userAlias;
+
+    // Only check if alias meets basic validation requirements
+    if (!alias || alias.length < 6) {
+      this.aliasMessage.set({ text: '', type: '' });
+      return;
+    }
+
+    this.checkAliasAvailability(alias);
+  }
+
+  private checkAliasAvailability(alias: string): void {
+    this.checkingAlias.set(true);
+    this.aliasMessage.set({ text: '', type: '' });
+
+    const checkAliasUrl = 'https://rapidcmsdemo.com/api/RapidCMS/login/check-alias';
+    const payload = { Alias: alias };
+
+    this.http.post<{ ok: boolean; exists: boolean; message: string }>(checkAliasUrl, payload).subscribe({
+      next: (response) => {
+        this.checkingAlias.set(false);
+        if (response.ok && !response.exists) {
+          this.aliasMessage.set({ text: response.message, type: 'success' });
+        } else if (response.exists) {
+          this.aliasMessage.set({ text: response.message, type: 'error' });
+          // Refocus the input field so user can retype
+          setTimeout(() => {
+            this.userAliasInput?.nativeElement.focus();
+          }, 100);
+        }
+      },
+      error: (error) => {
+        this.checkingAlias.set(false);
+        console.error('Alias check failed', error);
+        this.aliasMessage.set({ text: 'Unable to check alias availability. Please try again.', type: 'error' });
+      }
+    });
   }
 
   onZipInput(event: Event): void {
