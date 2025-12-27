@@ -1,5 +1,5 @@
 (function () {
-  const SELECTOR = ".itechjump-title .jump-j";
+  const SELECTOR = ".firehorse-title .jump-j";
   let started = false;
 
   function startAnimation() {

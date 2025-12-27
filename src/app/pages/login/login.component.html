@@ -22,8 +22,7 @@
   </div>
 
   <h1 class="page-title">
-    <span class="logo-i">I</span>Tech
-    <span class="logo-j">J</span>ump Login
+    <span class="logo-fire">Fire</span><span class="logo-horse">Horse</span> Login
   </h1>
   <p class="page-subtitle">
     Sign in with your FireHorse alias or your email address.
@@ -41,7 +40,7 @@
         [attr.autocomplete]="mode() === 'alias' ? 'username' : 'email'"
         [attr.inputmode]="mode() === 'alias' ? 'text' : 'email'"
         [attr.name]="mode() === 'alias' ? 'username' : 'email'"
-        [attr.maxlength]="mode() === 'alias' ? 8 : 255"
+        [attr.maxlength]="mode() === 'alias' ? 20 : 255"
       />
       <mat-error *ngIf="mode() === 'alias' && aliasError()">
         {{ aliasError() }}
@@ -69,6 +68,10 @@
       >
         <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
       </button>
+      <mat-error *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+        <span *ngIf="form.get('password')?.hasError('required')">Password is required.</span>
+        <span *ngIf="form.get('password')?.hasError('minlength')">Password must be at least 6 characters.</span>
+      </mat-error>
     </mat-form-field>
 
     <!-- Toggle alias/email mode -->

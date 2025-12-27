@@ -10,6 +10,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/media/media.component').then(m => m.MediaComponent)
   },
   {
+    path: 'tiktok',
+    loadComponent: () => import('./pages/tiktok/tiktok.component').then(m => m.TiktokComponent)
+  },
+  {
+    path: 'instagram',
+    loadComponent: () => import('./pages/instagram/instagram.component').then(m => m.InstagramComponent)
+  },
+  {
     path: 'about',
     loadComponent: () => import('./pages/about/about.component').then(m => m.AboutComponent)
   },

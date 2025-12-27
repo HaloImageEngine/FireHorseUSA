@@ -18,6 +18,12 @@ export class MediaComponent implements OnInit {
   isLoggedIn = false;
   userId: string | null = null;
   userAlias: string | null = null;
+  lastUploadedImage: string | null = null;
+  lastUploadedFileName: string | null = null;
+  showingReview = false;
+  deviceType: string = 'Unknown';
+  isAndroid: boolean = false;
+  isIOS: boolean = false;
 
   private readonly uploadUrl = 'https://rapidcmsdemo.com/api/CMSDemoImageLoad';
 
@@ -29,6 +35,32 @@ export class MediaComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkLoginStatus();
+    this.detectDevice();
+  }
+
+  private detectDevice(): void {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+
+    // Check for iOS devices
+    if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+      this.deviceType = 'iOS';
+      this.isIOS = true;
+      this.isAndroid = false;
+    }
+    // Check for Android devices
+    else if (/android/i.test(userAgent)) {
+      this.deviceType = 'Android';
+      this.isAndroid = true;
+      this.isIOS = false;
+    }
+    // Desktop or other devices
+    else {
+      this.deviceType = 'Desktop/Other';
+      this.isAndroid = false;
+      this.isIOS = false;
+    }
+
+    console.log('Device detected:', this.deviceType);
   }
 
   private checkLoginStatus(): void {
@@ -137,6 +169,13 @@ export class MediaComponent implements OnInit {
         this.isUploading = false;
         this.statusMessage = 'Image uploaded successfully.';
         console.log('Upload response:', response);
+
+        // Store the last uploaded image
+        this.lastUploadedImage = this.previewUrl;
+        this.lastUploadedFileName = uniqueFileName;
+
+        // Clear the current image and file input
+        this.clearCurrentImage();
       },
       error: (error) => {
         this.isUploading = false;
@@ -144,6 +183,34 @@ export class MediaComponent implements OnInit {
         console.error('Upload error:', error);
       },
     });
+  }
+
+  clearCurrentImage(): void {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.showingReview = false;
+
+    // Reset the file input
+    const input = document.getElementById('imageInput') as HTMLInputElement;
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  reviewLastImage(): void {
+    if (this.lastUploadedImage) {
+      this.previewUrl = this.lastUploadedImage;
+      this.showingReview = true;
+      this.statusMessage = `Reviewing: ${this.lastUploadedFileName}`;
+    }
+  }
+
+  closeReview(): void {
+    if (this.showingReview) {
+      this.previewUrl = null;
+      this.showingReview = false;
+      this.statusMessage = '';
+    }
   }
 
 }

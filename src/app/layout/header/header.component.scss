@@ -75,6 +75,7 @@
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .subtitle {
@@ -95,18 +96,18 @@
 }
 
 /* Animated title pieces */
-.itechjump-title {
+.firehorse-title {
   display: inline-flex;
   align-items: baseline;
   gap: 0;
 }
 
-.itechjump-title .itech,
-.itechjump-title .ump {
+.firehorse-title .itech,
+.firehorse-title .ump {
   color: #ffffff;
 }
 
-.itechjump-title .jump-j {
+.firehorse-title .jump-j {
   display: inline-block; // needed for translateY animation
   color: #fa0996;
   font-weight: 900;
@@ -307,6 +308,23 @@
 @media (max-width: 900px) {
   .header-inner {
     padding: 0 8px;
+  }
+
+  .logo-container {
+    height: 40px;
+    width: 40px;
+  }
+
+  .title {
+    font-size: 0.85rem;
+  }
+
+  .subtitle {
+    font-size: 0.65rem;
+  }
+
+  .brand {
+    gap: 8px;
   }
 
   .header-right {

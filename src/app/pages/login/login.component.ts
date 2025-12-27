@@ -59,7 +59,7 @@ export class LoginComponent {
 
   form: FormGroup = this.fb.group({
     aliasOrEmail: ['', [Validators.required]],
-    password: ['', [Validators.required]]
+    password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
   // Signals for UI state
@@ -77,7 +77,7 @@ export class LoginComponent {
   // Derived label for alias/email field
   aliasLabel = computed(() =>
     this.mode() === 'alias'
-      ? 'User Alias (6 letters + 2 numbers)'
+      ? 'User Alias (min 6 characters)'
       : 'User Email'
   );
 
@@ -119,19 +119,15 @@ export class LoginComponent {
   }
 
   private normalizeAlias(v: string): string {
-    return v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    return v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
   }
 
   private validateAlias(a: string) {
     const clean = a || '';
-    const lenOk = clean.length === 8;
-    const alnumOk = /^[A-Z0-9]{8}$/.test(clean);
-    const digits = (clean.match(/\d/g) || []).length;
-    const letters = (clean.match(/[A-Z]/g) || []).length;
-    const digitOk = digits === 2;
-    const letterOk = letters === 6;
-    const valid = lenOk && alnumOk && digitOk && letterOk;
-    return { valid, lenOk, alnumOk, digitOk, letterOk };
+    const lenOk = clean.length >= 6;
+    const alnumOk = /^[A-Z0-9]+$/.test(clean);
+    const valid = lenOk && alnumOk;
+    return { valid, lenOk, alnumOk };
   }
 
   // Derive an 8-char alias from an email if needed (letters only + '01')
@@ -150,30 +146,21 @@ export class LoginComponent {
       return;
     }
 
-    const { valid, lenOk, alnumOk, digitOk, letterOk } = this.validateAlias(alias);
+    const { valid, lenOk, alnumOk } = this.validateAlias(alias);
 
     if (valid) {
       this.aliasError.set(null);
       return;
     }
 
-    let msg = 'Please use 6 alpha and 2 numbers for a total of 8 Characters.';
+    let msg = 'Alias must be at least 6 characters.';
     if (!lenOk) {
-      msg = 'Alias must be exactly 8 characters.';
+      msg = 'Alias must be at least 6 characters.';
     } else if (!alnumOk) {
       msg = 'Letters and numbers only (A–Z, 0–9).';
     }
 
     this.aliasError.set(msg);
-
-    // Immediate pop when length is 8 but invalid mix
-    if (lenOk && (!digitOk || !letterOk || !alnumOk)) {
-      this.snackBar.open(
-        'Please use 6 alpha and 2 numbers for a total of 8 Characters.',
-        'OK',
-        { duration: 1600, verticalPosition: 'bottom', horizontalPosition: 'center' }
-      );
-    }
   }
 
   private setCookie(name: string, value: string, days: number = 365): void {
@@ -372,7 +359,7 @@ export class LoginComponent {
         if (this.mode() === 'alias') {
           const entered = this.normalizeAlias(aliasOrEmailRaw || '');
           const { valid } = this.validateAlias(entered);
-          aliasCookie = valid ? entered : 'DEVUSR01'; // 6 letters + 2 digits
+          aliasCookie = valid ? entered : 'DEVUSR01'; // fallback dev alias
         } else {
           const enteredEmail = aliasOrEmailRaw.trim();
           emailCookie = enteredEmail || 'dev@example.com';
@@ -406,10 +393,8 @@ export class LoginComponent {
         const { valid, lenOk, alnumOk } = this.validateAlias(aliasToVerify);
         if (!valid) {
           const reason = !lenOk
-            ? 'Alias must be exactly 8 characters.'
-            : !alnumOk
-            ? 'Letters and numbers only (A–Z, 0–9).'
-            : 'Alias must be 6 letters and 2 digits.';
+            ? 'Alias must be at least 6 characters.'
+            : 'Letters and numbers only (A–Z, 0–9).';
           this.error.set(reason);
           return;
         }

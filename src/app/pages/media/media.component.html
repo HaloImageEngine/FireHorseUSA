@@ -1,6 +1,9 @@
 <section class="media">
 	<h2>Upload an Image</h2>
-	<p class="hint">Use your phone camera or gallery to select a photo and send it to the server. <span *ngIf="isLoggedIn">(User: {{ userAlias }} - ID: {{ userId }})</span></p>
+	<p class="hint">Use your phone camera or gallery to select a photo and send it to the server.
+		<span *ngIf="isLoggedIn">(User: {{ userAlias }} - ID: {{ userId }} - Device: {{ deviceType }})</span>
+		<span *ngIf="!isLoggedIn">(Not Logged In - Device: {{ deviceType }})</span>
+	</p>
 
 	<div class="media__picker" *ngIf="isLoggedIn">
 		<label class="media__file-label" for="imageInput">
@@ -16,13 +19,34 @@
 	</div>
 
 	<div class="media__preview" *ngIf="previewUrl as url">
-		<h3>Preview</h3>
+		<h3>{{ showingReview ? 'Last Uploaded Image' : 'Preview' }}</h3>
 		<img [src]="url" alt="Selected image preview" />
+		<button
+			type="button"
+			class="close-review-btn"
+			*ngIf="showingReview"
+			(click)="closeReview()"
+		>
+			Close Review
+		</button>
 	</div>
 
 	<div class="media__actions" *ngIf="isLoggedIn">
-		<button type="button" (click)="uploadImage()" [disabled]="!selectedFile || isUploading">
+		<button
+			type="button"
+			(click)="uploadImage()"
+			[disabled]="!selectedFile || isUploading || showingReview"
+		>
 			{{ isUploading ? 'Uploading…' : 'Upload Image' }}
+		</button>
+
+		<button
+			type="button"
+			class="review-btn"
+			*ngIf="lastUploadedImage && !showingReview && !previewUrl"
+			(click)="reviewLastImage()"
+		>
+			Review Last Upload
 		</button>
 	</div>
 

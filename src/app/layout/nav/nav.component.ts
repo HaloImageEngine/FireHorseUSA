@@ -35,7 +35,14 @@ export class NavComponent {
 
   navItems: NavItem[] = [
     { label: 'Home', route: 'http://firehorsesaloon.com', exact: true },
-    { label: 'Media', route: '/media' },
+    {
+      label: 'Media',
+      children: [
+        { label: 'Send a Photo', route: '/media', title: 'Send a photo' },
+        { label: 'TikTok', route: '/tiktok', title: 'Visit our TikTok page' },
+        { label: 'Instagram', route: '/instagram', title: 'Visit our Instagram page' }
+      ]
+    },
     // {
     //   label: 'MediaView',
     //   children: [

@@ -1,4 +1,4 @@
-import { Component, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -23,7 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   // Full API URL - CORS must be enabled on the API server for production
   private readonly apiUrl = 'https://rapidcmsdemo.com/api/RapidCMS/login/create';
 
@@ -34,7 +34,14 @@ export class RegisterComponent {
   checkingAlias = signal(false);
   aliasMessage = signal<{ text: string; type: 'success' | 'error' | '' }>({ text: '', type: '' });
 
+  // Device detection
+  deviceType: string = 'Unknown';
+  isAndroid: boolean = false;
+  isIOS: boolean = false;
+
   @ViewChild('userAliasInput') userAliasInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('emailInput') emailInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('passwordInput') passwordInput!: ElementRef<HTMLInputElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -51,6 +58,35 @@ export class RegisterComponent {
       zip: ['', [this.zipValidator]],
       phoneNum: ['', [this.phoneValidator]]
     });
+  }
+
+  ngOnInit(): void {
+    this.detectDevice();
+  }
+
+  private detectDevice(): void {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+
+    // Check for iOS devices
+    if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+      this.deviceType = 'iOS';
+      this.isIOS = true;
+      this.isAndroid = false;
+      console.log('iOS device detected - applying keyboard fixes');
+    }
+    // Check for Android devices
+    else if (/android/i.test(userAgent)) {
+      this.deviceType = 'Android';
+      this.isAndroid = true;
+      this.isIOS = false;
+      console.log('Android device detected');
+    }
+    // Desktop or other devices
+    else {
+      this.deviceType = 'Desktop/Other';
+      this.isAndroid = false;
+      this.isIOS = false;
+    }
   }
 
   get f() {
@@ -161,6 +197,42 @@ export class RegisterComponent {
     const input = event.target as HTMLInputElement;
     input.value = input.value.replace(/\D/g, '').slice(0, 5);
     this.form.patchValue({ zip: input.value });
+  }
+
+  onEmailEnter(): void {
+    // For iOS, explicitly focus the password field and trigger keyboard
+    if (this.isIOS && this.passwordInput) {
+      // Delay to ensure email field blur completes
+      setTimeout(() => {
+        const pwdElement = this.passwordInput.nativeElement;
+        // Remove readonly if present
+        pwdElement.removeAttribute('readonly');
+        // Focus the field
+        pwdElement.focus();
+        // Trigger a touch event to ensure keyboard appears
+        const touchEvent = new TouchEvent('touchstart', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        });
+        pwdElement.dispatchEvent(touchEvent);
+      }, 150);
+    } else if (this.passwordInput) {
+      // For Android and desktop, standard focus
+      this.passwordInput.nativeElement.focus();
+    }
+  }
+
+  onPasswordFocus(): void {
+    // Additional iOS keyboard trigger on focus
+    if (this.isIOS && this.passwordInput) {
+      const element = this.passwordInput.nativeElement;
+      element.removeAttribute('readonly');
+      // Small delay to ensure keyboard appears
+      setTimeout(() => {
+        element.click();
+      }, 50);
+    }
   }
 
   onPhoneInput(event: Event): void {
